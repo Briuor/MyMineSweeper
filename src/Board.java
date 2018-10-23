@@ -59,6 +59,7 @@ public class Board {
 
             if (!board[mineRow][mineCol].getIsMine()) {
                 board[mineRow][mineCol].setIsMine(true);
+                board[mineRow][mineCol].setMinesAround(-1);
             }
             numMines++;
         }
@@ -86,42 +87,43 @@ public class Board {
             }
         }
     }
-    
+
+    //
     public void selectBlock(int x, int y) {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 int boardX = board[i][j].getX();
                 int boardY = board[i][j].getY();
                 if ((x > boardX && x < boardX + 32) && (y > boardY && y < boardY + 32)) {
-                    //If it's a mine player lose
-                    if (board[i][j].getIsMine()) {
+
+                    //if empty block
+                    if (board[i][j].getMinesAround() == 0) {
+                        revealEmptyBlocks(i, j);
+                    } //if mine
+                    else if (board[i][j].getIsMine()) {
                         System.out.println("perdeu");
-                    } //If it's an empty block( a block with no mines around itself)
-                    else if (board[i][j].getMinesAround() == 0) {
-                        //open each neighbor
-                        for(Block neighbor : getNeighbor(i, j)){
-                            neighbor.setShow(true);
-                            //https://github.com/KnightMiner/MineSweeper/blob/master/src/java/knightminer/minesweeper/MineSweeperBoard.java
-                        }
                     }
                     board[i][j].setShow(true);
-                    break;
+                    return;
                 }
             }
         }
     }
 
-    private Block[] getNeighbor(int i, int j) {
-        Block neighbor[] = new Block[9];
-        int numNeighbor = 0; 
+    public void revealEmptyBlocks(int i, int j) {
         for (int p = i - 1; p <= i + 1; p++) {
             for (int q = j - 1; q <= j + 1; q++) {
-                if (0 <= p && p < ROWS && 0 <= q && q < COLS && !board[i][j].getIsMine()) {
-                    neighbor[numNeighbor] = board[p][q];
-                    numNeighbor++;
+                if (0 <= p && p < ROWS && 0 <= q && q < COLS) {
+                    //If the block is another empty block keep the recursion
+                    if (board[p][q].getMinesAround() == 0 && !board[p][q].getShow()) {
+                        board[p][q].setShow(true);
+                        revealEmptyBlocks(p, q);
+                    } //if its a not empty block stop recursion
+                    else if (board[p][q].getMinesAround() > 0) {
+                        board[p][q].setShow(true);
+                    }
                 }
             }
         }
-        return neighbor;
     }
 }
