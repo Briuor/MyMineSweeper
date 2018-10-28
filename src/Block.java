@@ -19,6 +19,7 @@ public class Block {
         this.minesAround = 0;
     }
 
+    //--------GETTERS AND SETTERS----------
     public boolean isFlagged() {
         return flagged;
     }
@@ -27,7 +28,6 @@ public class Block {
         this.flagged = flagged;
     }
 
-    //--------GETTERS AND SETTERS----------
     public int getX() {
         return x;
     }

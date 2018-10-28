@@ -10,9 +10,11 @@ public class Board {
     private static final int COLS = 9; // number of cols of the board[][COLS]
     private static final int NUM_MINES = 10; // number of mines on the board
     private Block[][] board;  // matrix of blocks
+    private String playerStatus; // playerWon can be "won", "lost", "playing"
 
     public Board() {
         board = new Block[ROWS][COLS];
+        playerStatus = "playing";
         initBoard();
         generateMines();
         fillBlockMinesAround();
@@ -33,28 +35,33 @@ public class Board {
 
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
+                //mine
+                if(board[i][j].getIsMine() && board[i][j].getShow()){
+                    g.drawImage(Sprite.getSprite(352, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null);
+                }
                 //if block content must be showed
-                if (board[i][j].getShow()) {
-                    //draw empty block
-                    g.setColor(Color.blue);
-                    g.fillRect(board[i][j].getX(), board[i][j].getY(), Block.SIZE, Block.SIZE);
-                    g.setColor(Color.gray);
-                    g.drawRect(board[i][j].getX(), board[i][j].getY(), Block.SIZE, Block.SIZE);
-                    //draw text block
-                    g.setColor(Color.green);
-                    String minesAround = Integer.toString(board[i][j].getMinesAround());
-                    g.drawString(minesAround, board[i][j].getX() + 13, board[i][j].getY() + 20); // 13 and 20 to be on the center
-                } else if (board[i][j].isFlagged()) {
-                    g.setColor(Color.green);
-                    g.fillRect(board[i][j].getX(), board[i][j].getY(), Block.SIZE, Block.SIZE);
-                } else {
-//                    if (board[i][j].getIsMine()) {
-//                        g.setColor(Color.black);
-//                        g.fillRect(board[i][j].getX(), board[i][j].getY(), Block.SIZE, Block.SIZE);
-//                    } else {
-                    g.setColor(Color.gray);
-//                    }
-                    g.drawRect(board[i][j].getX(), board[i][j].getY(), Block.SIZE, Block.SIZE);
+                else if (board[i][j].getShow()) {
+                    switch(board[i][j].getMinesAround()){
+                        //draw empty block
+                        case 0:g.drawImage(Sprite.getSprite(32, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        //draw numbered blocks
+                        case 1:g.drawImage(Sprite.getSprite(96, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 2:g.drawImage(Sprite.getSprite(128, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 3:g.drawImage(Sprite.getSprite(160, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 4:g.drawImage(Sprite.getSprite(192, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 5:g.drawImage(Sprite.getSprite(224, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 6:g.drawImage(Sprite.getSprite(256, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 7:g.drawImage(Sprite.getSprite(288, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                        case 8:g.drawImage(Sprite.getSprite(320, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null); break;
+                    }
+                } 
+                //flagged block
+                else if (board[i][j].isFlagged()) {
+                    g.drawImage(Sprite.getSprite(64, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null);
+                } 
+                //uncovered block
+                else {
+                    g.drawImage(Sprite.getSprite(0, 0, 32, 32), board[i][j].getX(), board[i][j].getY(), null);
                 }
             }
         }
@@ -115,7 +122,7 @@ public class Board {
                         revealEmptyBlocks(i, j);
                     } //if mine
                     else if (board[i][j].getIsMine()) {
-                        System.out.println("perdeu");
+                        playerStatus = "lost";
                     }
                     board[i][j].setShow(true);
                     return;
@@ -153,6 +160,13 @@ public class Board {
         return neighbors;
     }
 
+    public String getPlayerStatus() {
+        if (checkWon()) {
+            playerStatus = "won";
+        }
+        return playerStatus;
+    }
+
     public boolean checkWon() {
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
@@ -172,7 +186,10 @@ public class Board {
                 int boardX = board[i][j].getX();
                 int boardY = board[i][j].getY();
                 if ((x > boardX && x < boardX + 32) && (y > boardY && y < boardY + 32)) {
-                    board[i][j].setFlagged(true);
+                    if(!board[i][j].isFlagged())
+                        board[i][j].setFlagged(true);
+                    else 
+                        board[i][j].setFlagged(false);
                     return;
                 }
             }
@@ -190,14 +207,15 @@ public class Board {
                     for (int p = i - 1; p <= i + 1; p++) {
                         for (int q = j - 1; q <= j + 1; q++) {
                             if (0 <= p && p < ROWS && 0 <= q && q < COLS) {
-                                System.out.println("2");
                                 if (board[p][q].isFlagged()) {
                                     flagged = true;
                                 }
                             }
                         }
                     }
-                    if(flagged)revealEmptyBlocksFlag(i, j);
+                    if (flagged) {
+                        revealEmptyBlocksFlag(i, j);
+                    }
                     return;
                 }
             }
@@ -212,15 +230,22 @@ public class Board {
                     if (!board[p][q].getShow() && !board[p][q].getIsMine()) {
                         board[p][q].setShow(true);
                         // check if any block around is an empty block and open it
-                        if(board[p][q].getMinesAround() == 0) {
+                        if (board[p][q].getMinesAround() == 0) {
                             revealEmptyBlocks(p, q);
                         }
-                    }
-                    // mine not flagged YOU LOSE
-                    else if(board[p][q].getIsMine() && !board[p][q].isFlagged()){
-                        System.out.println("PERDEU");
+                    } // mine not flagged YOU LOSE
+                    else if (board[p][q].getIsMine() && !board[p][q].isFlagged()) {
+                        playerStatus = "lost";
                     }
                 }
+            }
+        }
+    }
+
+    public void showAllBlocks() {
+        for (int i = 0; i < ROWS; i++) {
+            for (int j = 0; j < COLS; j++) {
+                board[i][j].setShow(true);
             }
         }
     }

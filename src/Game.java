@@ -24,7 +24,7 @@ public class Game extends JPanel {
     public void initMouseAdapter() {
         mouseAdapter = new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
                 // left button click
                 if (e.getButton() == MouseEvent.BUTTON1) {
                     // double left button click on a flagged field
@@ -38,8 +38,13 @@ public class Game extends JPanel {
                         board.selectBlock(e.getX(), e.getY());
                     }
                     //check the if player won
-                    if(board.checkWon()) {
+                    if(board.getPlayerStatus() == "won"){
                         System.out.println("Won");
+                    }
+                    //player lost
+                    else if(board.getPlayerStatus() == "lost"){
+                        System.out.println("lost");
+                        board.showAllBlocks();
                     }
                 }
                 //right button set a flag on a block
