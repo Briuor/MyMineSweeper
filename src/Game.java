@@ -30,7 +30,7 @@ public class Game extends JPanel {
                     // double left button click on a flagged field
                     if (e.getClickCount() == 2 && !e.isConsumed()) {
                         e.consume();
-                        System.out.println("Double");
+                        System.out.println("Double Click");
                         board.openFlaggedField(e.getX(), e.getY());
                     } 
                     // normal left button click

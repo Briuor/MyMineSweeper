@@ -196,24 +196,29 @@ public class Board {
         }
     }
 
+    //@param x, y are the click coordinates
     public void openFlaggedField(int x, int y) {
-        boolean flagged = false;
+        int flagged = 0;
+        Block b;
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
                 int boardX = board[i][j].getX();
                 int boardY = board[i][j].getY();
                 if ((x > boardX && x < boardX + 32) && (y > boardY && y < boardY + 32)) {
+                    //get the block clicked
+                    b = board[i][j];
                     //check if there is a flagged block around it
                     for (int p = i - 1; p <= i + 1; p++) {
                         for (int q = j - 1; q <= j + 1; q++) {
                             if (0 <= p && p < ROWS && 0 <= q && q < COLS) {
                                 if (board[p][q].isFlagged()) {
-                                    flagged = true;
+                                    flagged++; // count the number of flagged blocks around
                                 }
                             }
                         }
                     }
-                    if (flagged) {
+                    //the number of flagged blocks must be the same as the block mines around
+                    if (flagged == b.getMinesAround()) {
                         revealEmptyBlocksFlag(i, j);
                     }
                     return;
